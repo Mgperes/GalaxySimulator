@@ -1,3 +1,5 @@
+import pygame
+
 #Grade inicial
 grade = [
     [1, 0, 0, 0, 0, 1],
@@ -218,6 +220,9 @@ def direcao_movimento(grade, linha, coluna):
 
     return nova_linha, nova_coluna
 
+class vizualizadorgrade
+
+
 #=============================TESTE===============================
 #mostrar_grade(grade)
 
@@ -243,3 +248,5 @@ for geracao in range(5):
 
     grade_teste = mover_materia(grade_teste)
 #=================================================================
+
+#teste
