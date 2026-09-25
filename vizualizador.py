@@ -1,18 +1,6 @@
 import pygame
-from galaxiaCorrigida import grade_aleatoria, proxima_geracao
-
-TAMANHO_CELULA = 22
-TAMANHO_GRADE = 25
-GERACOES_POR_SEGUNDO = 4
-FORCA_ROTACAO = 1.2
-
-CORES = {
-    0: (8, 11, 20),      # vazio
-    1: (62, 111, 176),   # gás
-    2: (138, 95, 201),   # halo
-}
-COR_ESTRELA = (246, 194, 94)
-COR_TEXTO = (233, 231, 222)
+from config import *
+from main import grade_aleatoria, proxima_geracao
 
 
 def cor_da_celula(valor):
@@ -31,16 +19,24 @@ def desenhar_grade(tela, grade):
             pygame.draw.rect(tela, cor_da_celula(valor), rect)
 
 
+def desenhar_info(tela, fonte, altura, geracao, pausado):
+    texto = fonte.render(
+        f"geração {geracao}   [espaço] pausar   [r] reiniciar", 
+        True, COR_TEXTO
+    )
+    tela.blit(texto, (6, altura - 24))
+
+
 def main():
     pygame.init()
 
     grade = grade_aleatoria(tamanho=TAMANHO_GRADE, densidade_inicial=0.10, semente=7)
     largura = len(grade[0]) * TAMANHO_CELULA
-    altura = len(grade) * TAMANHO_CELULA + 30  # espaço extra pro contador de geração
+    altura = len(grade) * TAMANHO_CELULA + 30
 
     tela = pygame.display.set_mode((largura, altura))
     pygame.display.set_caption("Formação de galáxias — autômato celular")
-    fonte = pygame.font.SysFont("consolas", 16)
+    fonte = pygame.font.SysFont(FONTE_NOME, FONTE_TAMANHO)
     relogio = pygame.time.Clock()
 
     geracao = 0
@@ -62,13 +58,9 @@ def main():
             grade = proxima_geracao(grade, forca_rotacao=FORCA_ROTACAO)
             geracao += 1
 
-        tela.fill((5, 7, 14))
+        tela.fill(COR_FUNDO)
         desenhar_grade(tela, grade)
-
-        texto = fonte.render(
-            f"geração {geracao}   [espaço] pausar   [r] reiniciar", True, COR_TEXTO
-        )
-        tela.blit(texto, (6, altura - 24))
+        desenhar_info(tela, fonte, altura, geracao, pausado)
 
         pygame.display.flip()
         relogio.tick(GERACOES_POR_SEGUNDO)
