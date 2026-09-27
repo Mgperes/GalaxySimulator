@@ -180,7 +180,7 @@ class Efeitos:
             Efeitos.desenhar_celula_gas(tela, rect, cor, escala)
         elif valor == 2:  # Halo
             Efeitos.desenhar_celula_halo(tela, rect, cor, escala)
-        elif valor >= 3:  # Estrela
+        elif valor >= 4:  # Estrela
             Efeitos.desenhar_celula_estrela(tela, rect, cor, escala)
         
         # Bordas se ativado

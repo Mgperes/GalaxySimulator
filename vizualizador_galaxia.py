@@ -40,7 +40,7 @@ class Estatisticas:
                     self.total_gas += 1
                 elif valor == 2:
                     self.total_halo += 1
-                elif valor >= 3:
+                elif valor >= 4:
                     self.total_estrela += 1
         
         total = self.total_vazio + self.total_gas + self.total_halo + self.total_estrela
@@ -131,6 +131,7 @@ def main():
 
     # Estados
     geracao = 0
+    idades_estrelas = {}
     pausado = False
     rodando = True
     velocidade = GERACOES_POR_SEGUNDO
@@ -150,6 +151,7 @@ def main():
                 elif evento.key == pygame.K_r:
                     grade = grade_aleatoria(tamanho=TAMANHO_GRADE, densidade_inicial=0.10)
                     geracao = 0
+                    idades_estrelas = {}
                     gerenciador_anim = GerenciadorAnimacoes(grade)
                     estatisticas.atualizar(grade)
                 elif evento.key == pygame.K_UP:
@@ -170,7 +172,7 @@ def main():
 
         # Atualização da simulação
         if not pausado:
-            grade_nova = proxima_geracao(grade, forca_rotacao=FORCA_ROTACAO)
+            grade_nova, idades_estrelas = proxima_geracao(grade, idades_estrelas, forca_rotacao=FORCA_ROTACAO)
             gerenciador_anim.atualizar_grade(grade_nova)
             grade = grade_nova
             estatisticas.atualizar(grade)

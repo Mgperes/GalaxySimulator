@@ -10,9 +10,12 @@ LIMIAR_ESTRELA = 4
 FORCA_FEEDBACK = 0.4
 DISPERSAO_FEEDBACK = 0.12
 
+VIDA_ESTRELA = 20
+QUANTIDADE_GAS_MORTE = 4
+
 #Viés gravitacional: quanto mais longe do centro, mais difícil formar halo/estrela
 BONUS_HALO_BORDA = 4
-BONUS_ESTRELA_BORDA = 6
+BONUS_ESTRELA_BORDA = 10
 
 
 def grade_aleatoria(tamanho, densidade_inicial=0.10, semente=None):
@@ -99,7 +102,6 @@ def bias_distancia(i, j, tamanho_l, tamanho_c):
 
 def proximo_estado_por_densidade(valor, vizinhos, bias=0.0):
     """Decide o novo estado de uma célula a partir da densidade acumulada e da distância do centro."""
-    # Estrela é estado terminal: uma vez atingido, não regride.
     if valor >= LIMIAR_ESTRELA:
         return valor
  
@@ -120,6 +122,53 @@ def centro_grade(grade):
     centro_linha = (len(grade) - 1) / 2
     centro_coluna = (len(grade[0]) - 1) / 2
     return centro_linha, centro_coluna
+
+def atualizar_morte_estrelas(grade, idades_estrelas):
+    """
+    Atualiza a idade das estrelas.
+
+    Quando uma estrela atinge sua vida útil, ela morre e libera
+    uma pequena quantidade de gás nas células vizinhas.
+    """
+    nova_grade = [linha[:] for linha in grade]
+    novas_idades = {}
+
+    for (i, j), idade in idades_estrelas.items():
+
+        # A estrela atingiu sua idade máxima
+        if idade >= VIDA_ESTRELA:
+            # A estrela deixa de existir e vira gás
+            nova_grade[i][j] = 1
+
+            # Libera gás ao redor da estrela
+            vizinhos = []
+
+            for di in (-1, 0, 1):
+                for dj in (-1, 0, 1):
+
+                    if di == 0 and dj == 0:
+                        continue
+
+                    ni = i + di
+                    nj = j + dj
+
+                    if (
+                        0 <= ni < len(grade)
+                        and 0 <= nj < len(grade[0])
+                    ):
+                        # Não deposita diretamente em outra estrela
+                        if nova_grade[ni][nj] < LIMIAR_ESTRELA:
+                            vizinhos.append((ni, nj))
+
+            # Distribui o gás liberado nas células próximas
+            for ni, nj in vizinhos[:QUANTIDADE_GAS_MORTE]:
+                nova_grade[ni][nj] += 1
+
+        else:
+            # Estrela continua viva
+            novas_idades[(i, j)] = idade + 1
+
+    return nova_grade, novas_idades
 
 
 def calcular_novo_pos(i, j, grade, forca_rotacao):
@@ -207,27 +256,84 @@ def aplicar_feedback_estelar(grade, forca=FORCA_FEEDBACK):
     return nova
 
 
-def proxima_geracao(grade, forca_rotacao=1.2):
+def proxima_geracao(grade, idades_estrelas, forca_rotacao=1.2):
     """
     Calcula a próxima geração:
-      1) move e acumula matéria (gravidade + rotação diferencial),
-      2) aplica feedback estelar (dispersão ao redor de estrelas),
-      3) reclassifica cada célula por densidade.
+
+      1) verifica a idade e a morte das estrelas;
+      2) move e acumula matéria (gravidade + rotação diferencial);
+      3) aplica feedback estelar;
+      4) reclassifica cada célula por densidade;
+      5) registra as novas estrelas e suas idades.
     """
-    grade_movida = mover_para_centro(grade, forca_rotacao)
-    grade_com_feedback = aplicar_feedback_estelar(grade_movida)
- 
+
+    # 1. Verifica se alguma estrela morreu e libera gás
+    grade_com_morte, idades_atualizadas = atualizar_morte_estrelas(
+        grade,
+        idades_estrelas
+    )
+
+    # 2. Move a matéria em direção ao centro + rotação
+    grade_movida = mover_para_centro(
+        grade_com_morte,
+        forca_rotacao
+    )
+
+    # 3. Aplica o feedback das estrelas
+    grade_com_feedback = aplicar_feedback_estelar(
+        grade_movida
+    )
+
     tamanho_l = len(grade_com_feedback)
     tamanho_c = len(grade_com_feedback[0])
- 
+
+    # 4. Reclassifica as células
     nova_grade = []
+
     for i in range(tamanho_l):
         nova_linha = []
+
         for j in range(tamanho_c):
             valor = grade_com_feedback[i][j]
-            vizinhos = contar_vizinhos(grade_com_feedback, i, j)
-            bias = bias_distancia(i, j, tamanho_l, tamanho_c)
-            nova_linha.append(proximo_estado_por_densidade(valor, vizinhos, bias))
+            vizinhos = contar_vizinhos(
+                grade_com_feedback,
+                i,
+                j
+            )
+
+            bias = bias_distancia(
+                i,
+                j,
+                tamanho_l,
+                tamanho_c
+            )
+
+            nova_linha.append(
+                proximo_estado_por_densidade(
+                    valor,
+                    vizinhos,
+                    bias
+                )
+            )
+
         nova_grade.append(nova_linha)
- 
-    return nova_grade
+
+    # 5. Atualiza o registro das idades das estrelas
+    novas_idades = {}
+
+    for i in range(tamanho_l):
+        for j in range(tamanho_c):
+
+            if nova_grade[i][j] >= LIMIAR_ESTRELA:
+
+                posicao = (i, j)
+
+                # Estrela já existia
+                if posicao in idades_atualizadas:
+                    novas_idades[posicao] = idades_atualizadas[posicao]
+
+                # Estrela acabou de nascer
+                else:
+                    novas_idades[posicao] = 0
+
+    return nova_grade, novas_idades
