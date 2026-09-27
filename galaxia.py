@@ -102,19 +102,6 @@ class GaláxiaRenderizador:
         # Blit na posição
         tela.blit(surf, (pos_x - centro, pos_y - centro))
     
-    def desenhar_nucleo_galaxia(self, tela):
-        """Desenha o núcleo brilhante no centro"""
-        # Primeiro: glow imenso
-        self.criar_brilho_galaxia(tela, self.centro_x, self.centro_y, 
-                                  self.cor_nucleo, raio=80, intensidade=0.8)
-        
-        # Depois: núcleo sólido
-        pygame.draw.circle(tela, self.cor_nucleo, 
-                          (self.centro_x, self.centro_y), 30)
-        
-        # Brilho interno
-        pygame.draw.circle(tela, (255, 255, 200), 
-                          (self.centro_x, self.centro_y), 15)
     
     def desenhar_bracos_galaxia(self, tela, grade):
         """Desenha braços espirais da galáxia"""
@@ -186,9 +173,6 @@ class GaláxiaRenderizador:
         # Fundo estrelado
         self.desenhar_fundo_galaxia(tela)
         
-        # Desenha braços (opcional, pode ser lento)
-        # self.desenhar_bracos_galaxia(tela, grade)
-        
         # Desenha cada célula
         for i, linha in enumerate(grade):
             for j, valor in enumerate(linha):
@@ -201,9 +185,6 @@ class GaláxiaRenderizador:
                 
                 self.desenhar_celula_galaxia(tela, i, j, valor, distancia, 
                                             cor_animada, escala_anim)
-        
-        # Desenha núcleo por cima de tudo
-        self.desenhar_nucleo_galaxia(tela)
 
 
 class Efeito3D:

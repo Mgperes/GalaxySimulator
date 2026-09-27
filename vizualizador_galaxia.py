@@ -1,11 +1,23 @@
 import pygame
 import math
 from config import *
-from main import grade_aleatoria, proxima_geracao
+from main import grade_aleatoria, proxima_geracao, carregar_grade_de_arquivo
 from animacoes import GerenciadorAnimacoes, SistemaParticulas
 from botoes import Botao, ControleEscorregavel, PainelConfiguracao, BarraFerramenta
 from galaxia import GaláxiaRenderizador
 
+ARQUIVO_ESTADO_INICIAL = "estado_inicial.txt"
+
+def obter_estado_inicial():
+    """Carrega o estado inicial do arquivo texto; se não existir, gera aleatório."""
+    try:
+        grade = carregar_grade_de_arquivo(ARQUIVO_ESTADO_INICIAL)
+        print(f"Estado inicial carregado de '{ARQUIVO_ESTADO_INICIAL}'.")
+        return grade
+    except FileNotFoundError:
+        print(f"Arquivo '{ARQUIVO_ESTADO_INICIAL}' não encontrado — "
+              f"usando grade aleatória como alternativa.")
+        return grade_aleatoria(tamanho=TAMANHO_GRADE, densidade_inicial=0.10, semente=7)
 
 class Estatisticas:
     """Calcula e armazena estatísticas da grade"""
