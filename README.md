@@ -42,7 +42,7 @@ Esse modo imprime a grade no terminal durante 10 gerações.
 | Vazio | `0` | `.` |
 | Gás | `1` | `•` |
 | Halo | `2` | `○` |
-| Estrela | `3` ou mais | `★` |
+| Estrela | `4` ou mais | `★` |
 
 Estrelas são estados terminais: depois de formadas, permanecem na posição e continuam acumulando matéria.
 
