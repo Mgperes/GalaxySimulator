@@ -112,7 +112,7 @@ def main():
     pygame.init()
 
     # Inicialização
-    grade = grade_aleatoria(tamanho=TAMANHO_GRADE, densidade_inicial=0.10, semente=7)
+    grade = obter_estado_inicial()
     largura = len(grade[0]) * TAMANHO_CELULA
     altura = len(grade) * TAMANHO_CELULA + ALTURA_HUD
 
