@@ -1,11 +1,23 @@
 import pygame
 import math
 from config import *
-from main import grade_aleatoria, proxima_geracao
+from main import grade_aleatoria, proxima_geracao, carregar_grade_de_arquivo
 from animacoes import GerenciadorAnimacoes, SistemaParticulas
 from botoes import Botao, ControleEscorregavel, PainelConfiguracao, BarraFerramenta
 from galaxia import GaláxiaRenderizador
 
+ARQUIVO_ESTADO_INICIAL = "estado_inicial.txt"
+
+def obter_estado_inicial():
+    """Carrega o estado inicial do arquivo texto; se não existir, gera aleatório."""
+    try:
+        grade = carregar_grade_de_arquivo(ARQUIVO_ESTADO_INICIAL)
+        print(f"Estado inicial carregado de '{ARQUIVO_ESTADO_INICIAL}'.")
+        return grade
+    except FileNotFoundError:
+        print(f"Arquivo '{ARQUIVO_ESTADO_INICIAL}' não encontrado — "
+              f"usando grade aleatória como alternativa.")
+        return grade_aleatoria(tamanho=TAMANHO_GRADE, densidade_inicial=0.10, semente=7)
 
 class Estatisticas:
     """Calcula e armazena estatísticas da grade"""
@@ -28,7 +40,7 @@ class Estatisticas:
                     self.total_gas += 1
                 elif valor == 2:
                     self.total_halo += 1
-                elif valor >= 3:
+                elif valor >= 4:
                     self.total_estrela += 1
         
         total = self.total_vazio + self.total_gas + self.total_halo + self.total_estrela
@@ -100,7 +112,7 @@ def main():
     pygame.init()
 
     # Inicialização
-    grade = grade_aleatoria(tamanho=TAMANHO_GRADE, densidade_inicial=0.10, semente=7)
+    grade = obter_estado_inicial()
     largura = len(grade[0]) * TAMANHO_CELULA
     altura = len(grade) * TAMANHO_CELULA + ALTURA_HUD
 
@@ -119,6 +131,7 @@ def main():
 
     # Estados
     geracao = 0
+    idades_estrelas = {}
     pausado = False
     rodando = True
     velocidade = GERACOES_POR_SEGUNDO
@@ -138,6 +151,7 @@ def main():
                 elif evento.key == pygame.K_r:
                     grade = grade_aleatoria(tamanho=TAMANHO_GRADE, densidade_inicial=0.10)
                     geracao = 0
+                    idades_estrelas = {}
                     gerenciador_anim = GerenciadorAnimacoes(grade)
                     estatisticas.atualizar(grade)
                 elif evento.key == pygame.K_UP:
@@ -158,7 +172,7 @@ def main():
 
         # Atualização da simulação
         if not pausado:
-            grade_nova = proxima_geracao(grade, forca_rotacao=FORCA_ROTACAO)
+            grade_nova, idades_estrelas = proxima_geracao(grade, idades_estrelas, forca_rotacao=FORCA_ROTACAO)
             gerenciador_anim.atualizar_grade(grade_nova)
             grade = grade_nova
             estatisticas.atualizar(grade)
