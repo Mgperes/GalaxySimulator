@@ -99,7 +99,7 @@ class PainelInformacoes:
             self.tela.blit(texto_stats, (15, self.y + 40))
         
         # Controles
-        controles = "[ ESPAÇO ] pausar   [ R ] reiniciar   [ ↑↓ ] velocidade   [ C ] configurações"
+        controles = "[ ESPAÇO ] pausar   [ R ] reiniciar     [ C ] configurações"
         texto_controles = self.fonte_pequena.render(
             controles, True, COR_TEXTO_SECUNDARIA
         )
@@ -149,7 +149,7 @@ def main():
                 if evento.key == pygame.K_SPACE:
                     pausado = not pausado
                 elif evento.key == pygame.K_r:
-                    grade = grade_aleatoria(tamanho=TAMANHO_GRADE, densidade_inicial=0.10)
+                    grade = obter_estado_inicial()
                     geracao = 0
                     idades_estrelas = {}
                     gerenciador_anim = GerenciadorAnimacoes(grade)
